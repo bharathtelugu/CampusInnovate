@@ -1,19 +1,23 @@
 from django.contrib import admin
-from admin_charts.admin import AdminChartMixin
-from admin_charts.charts import Chart
 from .models import (
     Event, ProblemStatement, Schedule, SubSchedule, FAQ, 
     EventMedia, EventStaff, Eligibility, HowToParticipate, 
     CertificatesAndRewards, EventResource
 )
+# We import Announcement to inline it here for easy management
+from communications.models import Announcement
 
-# --- Define all your inlines first ---
+# --- Inlines for the EventAdmin ---
+# These allow managing all related data from the main Event page.
 
-class ProblemStatementInline(admin.TabularInline): # Tabular is a compact, row-based view
+class EventMediaInline(admin.StackedInline):
+    model = EventMedia
+
+class ProblemStatementInline(admin.TabularInline):
     model = ProblemStatement
-    extra = 1 # How many new blank forms to show
+    extra = 1
 
-class ScheduleInline(admin.StackedInline): # Stacked is a taller, form-like view
+class ScheduleInline(admin.StackedInline):
     model = Schedule
     extra = 1
 
@@ -21,62 +25,45 @@ class FAQInline(admin.TabularInline):
     model = FAQ
     extra = 1
 
-class EventStaffInline(admin.TabularInline): # This implements "Assign organizers"
+class EventStaffInline(admin.TabularInline):
     model = EventStaff
     extra = 1
+    autocomplete_fields = ['user'] # Makes selecting users easier
 
-class EligibilityInline(admin.TabularInline):
+class AnnouncementInline(admin.TabularInline):
+    model = Announcement
+    extra = 1
+    fields = ('title', 'message')
+
+class EligibilityInline(admin.StackedInline):
     model = Eligibility
-    extra = 1
+    extra = 0
 
-class HowToParticipateInline(admin.StackedInline):
-    model = HowToParticipate
-    extra = 1
-    
-class EventResourceInline(admin.TabularInline):
-    model = EventResource
-    extra = 1
-
-# --- Now, create the main EventAdmin ---
-
+# --- Main Event Admin Configuration ---
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('event_name', 'event_start', 'event_end', 'event_mode')
-    list_filter = ('event_mode', 'event_start')
+    list_display = ('event_name', 'status', 'event_start', 'event_end', 'event_mode')
+    list_filter = ('status', 'event_mode', 'event_start')
     search_fields = ('event_name', 'title')
     
-    # This is where the magic happens!
-    # All these models can now be edited from the Event page.
+    # All related models are managed from this single page
     inlines = [
+        EventMediaInline,
         EventStaffInline,
         ProblemStatementInline,
         ScheduleInline,
+        AnnouncementInline,
         FAQInline,
         EligibilityInline,
-        HowToParticipateInline,
-        EventResourceInline,
-        # You can also add EventMedia, CertificatesAndRewards, etc.
     ]
 
-# We register SubSchedule separately since it's an inline of an inline
+# --- Other Admins (Optional but helpful) ---
+@admin.register(Schedule)
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ('event', 'day_number', 'date')
+    list_filter = ('event',)
+
 @admin.register(SubSchedule)
 class SubScheduleAdmin(admin.ModelAdmin):
     list_display = ('schedule', 'time_start', 'time_end', 'activity_description')
-    list_filter = ('schedule__event',) # Lets you filter by event!
-
-
-@admin.register(Event)
-class EventAdmin(AdminChartMixin, admin.ModelAdmin): # Add AdminChartMixin
-    list_display = ('event_name', 'event_start', 'event_end', 'event_mode')
-    # ... (all your other settings and inlines) ...
-    
-    def get_admin_charts(self, request):
-        # This chart shows participants per day for this event
-        chart = Chart.bar(
-            "Registrations per Day",
-            "accounts.EventRegistration", # The model to chart
-            "registered_at__date",        # Group by this date field
-        )
-        # Filter the chart to only show data for the *current* event
-        chart.filter_by("event__id", request.resolver_match.kwargs["object_id"])
-        return [chart]
+    list_filter = ('schedule__event',)

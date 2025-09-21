@@ -1,18 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-from events.models import Event # Import Event model
 
-# --- UPDATED USER MODEL ---
-# We've removed site_role. It's simpler now.
-# is_staff=False (default) == Participant
-# is_staff=True == Privileged user (Judge, Manager, etc.)
+# The events model is referenced by RegistrationCode and EventRegistration
+# It's assumed to be in an app named 'events'
+from events.models import Event 
+
+# --- 1. Custom User Model ---
+# We use Django's built-in Groups for roles.
+# is_staff=False (default) == Participant (Student)
+# is_staff=True == Privileged user (Judge, Manager, etc.) assigned to Groups.
 class User(AbstractUser):
-    # No role field needed here. We use Django Groups.
     pass
 
-# --- UNCHANGED USERPROFILE MODEL ---
-# This model is still perfect.
+# --- 2. User Profile Model ---
+# Stores extra, flexible information about a user.
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     
@@ -24,8 +26,8 @@ class UserProfile(models.Model):
     # General & Professional fields
     about = models.TextField(blank=True, null=True)
     highlight = models.CharField(max_length=255, blank=True, null=True)
-    skills = models.TextField(blank=True, null=True, help_text="General skills: design, development")
-    technical_skillset = models.TextField(blank=True, null=True, help_text="Langs, frameworks, tools")
+    skills = models.TextField(blank=True, null=True, help_text="General skills: e.g., Design, Development, Management")
+    technical_skillset = models.TextField(blank=True, null=True, help_text="Specifics: e.g., Python, Django, React")
     social_links = models.JSONField(default=dict, blank=True)
     professional_role = models.CharField(max_length=100, blank=True, null=True, help_text="For judges/mentors")
     organization_name = models.CharField(max_length=100, blank=True, null=True)
@@ -33,8 +35,8 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
-# --- NEW MODEL: RegistrationCode (Table: InviteCode) ---
-# Your model for gating participant sign-ups
+# --- 3. Registration Code Model ---
+# Used to gate participant sign-ups.
 class RegistrationCode(models.Model):
     code = models.CharField(max_length=50, unique=True)
     event = models.ForeignKey(Event, on_delete=models.SET_NULL, null=True, blank=True, 
@@ -54,13 +56,13 @@ class RegistrationCode(models.Model):
     def __str__(self):
         return f"{self.code} ({self.uses_count}/{self.max_uses} used)"
 
-# --- NEW MODEL: EventRegistration (Optional but Recommended) ---
-# Your model for explicitly linking a participant to an event
+# --- 4. Event Registration Model ---
+# Explicitly links a participant to an event they have registered for.
 class EventRegistration(models.Model):
     participant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, 
                                     related_name="event_registrations")
     event = models.ForeignKey(Event, on_delete=models.CASCADE, 
-                              related_name="participants")
+                              related_name="registrations") # Changed related_name for clarity
     
     STATUS_CHOICES = (
         ('registered', 'Registered'),
@@ -70,13 +72,13 @@ class EventRegistration(models.Model):
     registered_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('participant', 'event') # User can only register for an event once
+        unique_together = ('participant', 'event')
 
     def __str__(self):
         return f"{self.participant.username} registered for {self.event.event_name}"
 
-# --- NEW MODEL: ParticipantRegistrationLog ---
-# Your model for auditing sign-up attempts
+# --- 5. Registration Log Model ---
+# Audits all sign-up attempts for security and monitoring.
 class ParticipantRegistrationLog(models.Model):
     email_attempt = models.EmailField()
     code_used = models.CharField(max_length=50, blank=True, null=True)

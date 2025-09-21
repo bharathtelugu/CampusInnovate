@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    
+    <!-- Hero Section -->
+    <div class="relative rounded-lg shadow-xl overflow-hidden mb-8">
+        <img src="{{ event.media.banner_image.url }}" alt="{{ event.event_name }} Banner" class="w-full h-64 md:h-96 object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-4">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white">{{ event.event_name }}</h1>
+            <p class="mt-2 text-lg md:text-xl text-gray-200">{{ event.title }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left/Main Column -->
+        <div class="lg:col-span-2 space-y-12">
+            <!-- Announcements -->
+            {% if event.announcements.all %}
+                <div>
+                    <h2 class="text-3xl font-bold mb-4 text-yellow-600">Announcements</h2>
+                    <div class="space-y-4">
+                        {% for announcement in event.announcements.all %}
+                        <div class="border-l-4 border-yellow-400 bg-yellow-50 p-4 rounded-r-lg">
+                            <h3 class="text-xl font-semibold text-yellow-800">{{ announcement.title }}</h3>
+                            <p class="text-sm text-gray-500 mb-2">{{ announcement.created_at|date:"F d, Y, P" }}</p>
+                            <p class="text-yellow-700">{{ announcement.message|linebreaks }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- About -->
+            <div>
+                <h2 class="text-3xl font-bold mb-4">About This Event</h2>
+                <p class="text-lg text-gray-700 leading-relaxed">{{ event.about_event|linebreaks }}</p>
+            </div>
+
+            <!-- Schedule -->
+            <div>
+                <h2 class="text-3xl font-bold mb-4">Schedule</h2>
+                <div class="space-y-6">
+                    {% for day in event.schedules.all %}
+                    <div class="border p-4 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-semibold">Day {{ day.day_number }} ({{ day.date|date:"F d, Y" }})</h3>
+                        <p class="text-gray-600 mb-4">{{ day.description }}</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            {% for item in day.sub_schedules.all %}
+                            <li><strong>{{ item.time_start|time:"g:i A" }} - {{ item.time_end|time:"g:i A" }}:</strong> {{ item.activity_description }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% empty %}
+                    <p>The event schedule will be posted soon.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Problem Statements -->
+             <div>
+                <h2 class="text-3xl font-bold mb-4">Problem Statements</h2>
+                <div class="space-y-4">
+                    {% for problem in event.problem_statements.all %}
+                    <div class="border p-4 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-semibold">{{ problem.title }}</h3>
+                        <p class="mt-2 text-gray-700">{{ problem.description|linebreaks }}</p>
+                    </div>
+                    {% empty %}
+                    <p>Problem statements will be released soon!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="border p-4 rounded-lg shadow-md bg-white sticky top-8">
+                <h3 class="text-2xl font-semibold mb-4">Event Info</h3>
+                <div class="space-y-3">
+                    <p><strong>Mode:</strong> {{ event.get_event_mode_display }}</p>
+                    {% if event.venue_name %}<p><strong>Venue:</strong> {{ event.venue_name }}</p>{% endif %}
+                    <hr>
+                    <h4 class="font-semibold text-lg">Timeline</h4>
+                    <p><strong>Registration:</strong> {{ event.registration_start|date:"M d" }} - {{ event.registration_end|date:"M d, Y" }}</p>
+                    <p><strong>Event:</strong> {{ event.event_start|date:"M d" }} - {{ event.event_end|date:"M d, Y" }}</p>
+                </div>
+                
+                <a href="#" class="mt-6 w-full text-center inline-block bg-green-600 text-white font-bold px-4 py-3 rounded-md hover:bg-green-700 transition-colors">
+                    Register Now
+                </a>
+            </div>
+            
+            <div class="border p-4 rounded-lg shadow-md bg-white">
+                <h3 class="text-2xl font-semibold mb-4">Organizers & Staff</h3>
+                <ul class="space-y-3">
+                    {% for staff in event.staff.all %}
+                    <li>
+                        <strong>{{ staff.user.get_full_name }}</strong><br>
+                        <span class="text-sm text-gray-600">{{ staff.role }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-900">Score Submission</h1>
+            <p class="text-xl text-gray-600">You are scoring: <span class="font-bold">{{ submission.project_title }}</span> by Team {{ submission.team.team_name }}</p>
+        </div>
+
+        <!-- Submission Details Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Project Details</h2>
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-semibold text-gray-700">Description</h3>
+                    <p class="text-gray-600">{{ submission.project_description|linebreaks }}</p>
+                </div>
+                {% if submission.repo_link %}
+                <div>
+                    <h3 class="font-semibold text-gray-700">Repository Link</h3>
+                    <a href="{{ submission.repo_link }}" target="_blank" class="text-indigo-600 hover:underline break-all">{{ submission.repo_link }}</a>
+                </div>
+                {% endif %}
+                {% if submission.demo_link %}
+                <div>
+                    <h3 class="font-semibold text-gray-700">Demo Link</h3>
+                    <a href="{{ submission.demo_link }}" target="_blank" class="text-indigo-600 hover:underline break-all">{{ submission.demo_link }}</a>
+                </div>
+                {% endif %}
+                {% if submission.image_upload %}
+                <div class="mt-4">
+                    <h3 class="font-semibold text-gray-700">Submitted Image/Poster</h3>
+                    <img src="{{ submission.image_upload.url }}" alt="Submission Image" class="mt-2 rounded-lg border max-w-full h-auto">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Scoring Form Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Evaluation</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="space-y-6">
+                    <div>
+                        <label for="id_score" class="block text-sm font-medium text-gray-700">Score (0-100)</label>
+                        <div class="mt-1">
+                            {{ form.score }}
+                        </div>
+                        {% if form.score.errors %}<p class="text-red-500 text-xs mt-1">{{ form.score.errors.as_text }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="id_feedback" class="block text-sm font-medium text-gray-700">Feedback (Optional)</label>
+                        <div class="mt-1">
+                           {{ form.feedback }}
+                        </div>
+                        {% if form.feedback.errors %}<p class="text-red-500 text-xs mt-1">{{ form.feedback.errors.as_text }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end gap-4">
+                    <a href="{% url 'judging_dashboard' submission.team.event.id %}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Cancel</a>
+                    <button type="submit" class="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-md hover:bg-indigo-700 shadow-sm">Save Score</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

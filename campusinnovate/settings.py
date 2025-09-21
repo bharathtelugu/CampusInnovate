@@ -113,6 +113,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# --- Authentication Settings ---
+LOGIN_URL = 'login' # The name of our login URL pattern
+LOGIN_REDIRECT_URL = 'dashboard' # Send users to our dashboard redirect view after login
+LOGOUT_REDIRECT_URL = 'home' # Send users to the homepage after logout
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

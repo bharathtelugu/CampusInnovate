@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-6">Welcome, {{ user.first_name }}!</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+            <h2 class="text-2xl font-semibold mb-4">My Registered Events</h2>
+            <div class="space-y-4">
+                {% for reg in my_registrations %}
+                    <div class="border p-4 rounded-lg shadow">
+                        <h3 class="text-xl font-bold">{{ reg.event.event_name }}</h3>
+                        <p>Status: <span class="font-semibold">{{ reg.get_status_display }}</span></p>
+                        <a href="{% url 'event-detail' reg.event.pk %}" class="text-blue-500">View Event Details</a>
+                    </div>
+                {% empty %}
+                    <p>You are not registered for any events yet.</p>
+                    <a href="{% url 'home' %}" class="text-blue-500">Browse Events</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-2xl font-semibold mb-4">My Team</h2>
+            <div class="border p-4 rounded-lg shadow bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-500">Team Info Coming Soon</h3>
+                <p class="text-gray-600">After we build Step 5, you will be able to create, join, and manage your team here.</p>
+                </div>
+            
+            <h2 class="text-2xl font-semibold my-4">My Submission</h2>
+            <div class="border p-4 rounded-lg shadow bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-500">Submission Uploader Coming Soon</h3>
+                <p class="text-gray-600">After we build Step 5, you will be able to submit your project here.</p>
+                </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

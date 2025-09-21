@@ -1,0 +1,41 @@
+<nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo / Site Name -->
+            <div class="flex-shrink-0">
+                <a href="{% url 'home' %}" class="text-2xl font-bold text-indigo-600">
+                    CampusInnovate
+                </a>
+            </div>
+
+            <!-- Main Navigation Links -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'home' %}" class="text-gray-600 hover:text-indigo-600">Events</a>
+                <!-- Add other primary links here if needed -->
+            </div>
+
+            <!-- Right-side Actions (Login/User Menu) -->
+            <div class="flex items-center space-x-4">
+                {% if user.is_authenticated %}
+                    <!-- Authenticated User Links -->
+                    <a href="{% url 'notification-list' %}" class="relative text-gray-600 hover:text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        {% if unread_notifications_count > 0 %}
+                            <span class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                                {{ unread_notifications_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="text-gray-600 hover:text-indigo-600">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Log Out</a>
+                {% else %}
+                    <!-- Anonymous User Links -->
+                    <a href="{% url 'login' %}" class="text-gray-600 hover:text-indigo-600">Log In</a>
+                    <a href="{% url 'register' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
